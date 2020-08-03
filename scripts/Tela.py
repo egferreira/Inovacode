@@ -24,6 +24,7 @@ class Tela( object):
         if ( self.openSemScreen == False):
             self.openSemScreen = True
             a = Semana.MultiColumnListbox()
+            print (a)
 
         
 

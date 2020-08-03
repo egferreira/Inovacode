@@ -1,12 +1,14 @@
-'''
-This script changes the C:\Windows\System32\drivers\etc\hosts file to block any
-website during a certain period of time.
+# !/usr/bin/env python3
+#"""
+#    This script changes the C:\Windows\System32\drivers\etc\hosts file to block any
+#    website during a certain period of time.
 
- Process:
-1. Open hosts file to read and write
-2. Modify file to add blocked sites IF within timer. Close file
-3. When timer finished, Open file again modify file and delete blocked websites
-'''
+#    Process:
+#    1. Open hosts file to read and write
+#    2. Modify file to add blocked sites IF within timer. Close file
+#    3. When timer finished, Open file again modify file and delete blocked websites
+#"""
+
 import time
 import datetime as dt
 

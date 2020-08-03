@@ -7,7 +7,7 @@ class MultiColumnListbox(object):
 
     def __init__(self):
         self.car_header = ['Atividade', 'Tempo', 'Prioridade']
-        self.car_list = [ (" Teste", "1", "3") ]
+        self.car_list = [ (" Teste", "1", "3"), ("Greg", "1", "3") ]
         self.tree = None
         self._setup_widgets()
         self._build_tree()
