@@ -11,6 +11,11 @@ import pendulum
 #     # doing something........
 #     print("Something")
 
+data = {"Task" : ["Fazer café", "Ganhar Hackathon", "Anotar"],
+                     "Time" : [50, 900, 300],
+                     "Priority" : [5, 4, 1]}
+tasks = pd.DataFrame(data=data)
+
 def run_app():
     # hide main window
     # root = tkinter.Tk()
@@ -23,8 +28,9 @@ def run_app():
     events = google_calendar.get_next_events(last_day=pd.to_datetime(pendulum.now().end_of('week')), number=100)
     
     # print(events.dtypes)
+    print(tasks)
     # df = google_calendar.process_work_slices()
-    print(events)
+    google_calendar.schedule_time(tasks, events)
     # today = 
     # start = today.start_of('week')
     # end = 

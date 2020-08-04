@@ -23,7 +23,6 @@ class GoogleCalendarApi(object):
         self.subject = subject
         self.creds = None
         self.service = None
-        self.subject = None
         self.setup()
 
     def setup(self):
@@ -51,15 +50,13 @@ class GoogleCalendarApi(object):
     def get_next_events(self, last_day, number=100):
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
         events_result = self.service.events().list(calendarId='primary', timeMin=now,
                                             maxResults=number, singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
-
         events_df = pd.DataFrame()
         events_df = events_df.append(events, ignore_index=True)
-        events_df = events_df[['summary', 'start', 'end']]
+        events_df = events_df[['summary', 'start', 'end', 'id']]
         events_df['start'] = events_df['start'].apply(lambda x: x.get('dateTime'))
         events_df['start'] = pd.to_datetime(events_df['start'])
         events_df['end'] = events_df['end'].apply(lambda x: x.get('dateTime'))
@@ -71,36 +68,65 @@ class GoogleCalendarApi(object):
         return events_df
     
     def set_event(self, init_time, end_time, title, description):
-        d = datetime.datetime.utcnow().date()
-        tomorrow = datetime.datetime(d.year, d.month, d.day, 10)+datetime.timedelta(days=1)
-        start = tomorrow.isoformat()
-        end = (tomorrow + datetime.timedelta(hours=1)).isoformat()
-        body={"summary": 'Hello there, Automating calendar', 
-            "description": 'Google calendar with python',
+        start = init_time.to_pydatetime().isoformat()
+        end = end_time.to_pydatetime().isoformat()
+        body={"summary": title, 
+            "description": 'Cardeal Assist',
             "start": {"dateTime": start, "timeZone": 'utc'}, 
             "end": {"dateTime": end, "timeZone": 'utc'},
             }
 
         event = self.service.events().insert(calendarId=self.subject,body=body).execute()
 
-    def process_work_slices(events):
-        
+    def delete_events(self, eventsIds):
+        for eventId in eventsIds:
+            self.delete_event(eventId)
 
+    def delete_event(self, eventId):
+        event = self.service.events().delete(calendarId=self.subject,eventId=eventId).execute()
 
-        pass
-        # time_slices = pd.DataFrame(columns=['Summary', 'Init Time', 'End Time'])
-        # for event in events:
-        #     summary = event['summary']
-        #     if(summary == "Work"):    
-        #         start = event['start'].get('dateTime', event['start'].get('date'))
-        #         end = event['end'].get('dateTime', event['end'].get('date'))
-        #         line = {"Summary" : summary,
-        #                 "Init Time" : start,
-        #                 "End Time" : end
-        #         }
-        #         time_slices.append(line)
+    def schedule_time(self, tasks, periods_df, pomodoro_break=pd.Timedelta(minutes=5)):
+        periods_df["Total time"] = periods_df['end'] - periods_df['start']
+        tasks['Time'] = tasks['Time'].apply(lambda x: pd.Timedelta(minutes=x))
+        tasks.sort_values(by=["Priority", "Time"], ascending=False, inplace=True)
+
+        tasks_processing = tasks.copy()
         
-        # return time_slices
+        # scheduled_tasks = pd.DataFrame("Summary", "Init Time", "End Time")
+        for task in range(0, len(tasks_processing)):
+            # pomodoro_time = pd.Timedelta(minutes=((tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")]/25)-1)*pomodoro_break)
+            pomodoro_time = pd.Timedelta(minutes=0)
+            for time_slice in range(0, len(periods_df)):
+                if(periods_df.iloc[time_slice, periods_df.columns.get_loc('end')] == periods_df.iloc[time_slice, periods_df.columns.get_loc('start')]):
+                    continue
+
+                elif(tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")] + pomodoro_time < periods_df.iloc[time_slice, periods_df.columns.get_loc('Total time')]):
+                    summary = tasks_processing.iloc[task, tasks_processing.columns.get_loc('Task')]
+                    start = periods_df.iloc[time_slice, periods_df.columns.get_loc('start')]
+                    end = periods_df.iloc[time_slice, periods_df.columns.get_loc('start')] + tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")]
+                    self.set_event(start, end, summary, "Blank")
+                    periods_df.iloc[time_slice, periods_df.columns.get_loc('start')] = start + tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")] + pomodoro_time
+                    periods_df["Total time"] = periods_df['end'] - periods_df['start']
+                    break
+
+                elif(tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")] > periods_df.iloc[time_slice, periods_df.columns.get_loc('Total time')]):
+                    # pomodoro_time_split = (periods_df.iloc[time_slice, periods_df.columns.get_loc('Total time')]/25-1)*pomodoro_break
+                    pomodoro_time_split = pd.Timedelta(minutes=0)
+                    tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")] = tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")] + pomodoro_time_split - periods_df.iloc[time_slice, periods_df.columns.get_loc('Total time')]
+                    summary = tasks_processing.iloc[task, tasks_processing.columns.get_loc('Task')]
+                    start = periods_df.iloc[time_slice, periods_df.columns.get_loc('start')]
+                    end = periods_df.iloc[time_slice, periods_df.columns.get_loc('end')]
+                    self.set_event(start, end, summary, "Blank")
+                    periods_df.iloc[time_slice, periods_df.columns.get_loc('start')] = periods_df.iloc[time_slice, periods_df.columns.get_loc('end')]
+                    periods_df["Total time"] = periods_df['end'] - periods_df['start']
+
+                    if(tasks_processing.iloc[task, tasks_processing.columns.get_loc("Time")] <= pd.Timedelta(minutes=0)):
+                        break
+        
+        # periods_df["Total time"] = periods_df['end'] - periods_df['start']
+        list_to_remove = periods_df['id'].to_list()
+        self.delete_events(list_to_remove)
+        
 
 if __name__ == '__main__':
     # main()
