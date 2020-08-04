@@ -16,7 +16,7 @@ class Tela( object):
     header = None
     active_list = None
 
-    def __init__( self, root):
+    def __init__(self, root):
         self.root = root
         self.cal = Calendar(root, seLectmode ="day", year=2020, month=8, day=2, firstweekday = "sunday")
         self.openSemScreen = False
@@ -94,9 +94,6 @@ class Tela( object):
         self.delete_button.grid( row = 5, column = 2, sticky = tk.W)
         
         self.set_tree( )
-        
-        pomodoro = tk.Button( self.root, text = "Start pomodoro", command = self.start_pomodoro)
-        pomodoro.grid( column = 1, sticky = tk.W)
         
 
     def getDf( self):

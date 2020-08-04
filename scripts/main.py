@@ -7,11 +7,10 @@ import threading
 import GoogleCalendarApi as calendar
 import pendulum
 
-# def MyThread (threading.thread):
-#     # doing something........
-#     print("Something")
+    
+def run_app():
 
-data = {"Task" : ["Fazer cafÃ©", "Ganhar Hackathon", "Anotar"],
+data = {"Task" : ["Fazer café", "Ganhar Hackathon", "Anotar"],
                      "Time" : [50, 900, 300],
                      "Priority" : [5, 4, 1]}
 tasks = pd.DataFrame(data=data)
