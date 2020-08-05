@@ -8,6 +8,7 @@ import numpy as np
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+import pendulum
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -64,8 +65,30 @@ class GoogleCalendarApi(object):
         events_df = events_df[events_df["summary"]=="Work"]
         events_df = events_df[events_df['start'] < last_day.tz_localize('UTC')]
 
-
         return events_df
+
+    def check_concluded_events_this_week(self):
+        # Call the Calendar API
+        week_init = pendulum.now().start_of('week')
+        print(week_init)
+        last_day = pd.to_datetime(pendulum.now().end_of('week'))
+        events_result = self.service.events().list(calendarId='primary', timeMin=week_init,
+                                            maxResults=100, singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        events_df = pd.DataFrame()
+        events_df = events_df.append(events, ignore_index=True)
+        events_df = events_df[['summary', 'description', 'start', 'end', 'id']]
+        events_df['start'] = events_df['start'].apply(lambda x: x.get('dateTime'))
+        events_df['start'] = pd.to_datetime(events_df['start'])
+        events_df['end'] = events_df['end'].apply(lambda x: x.get('dateTime'))
+        events_df['end'] = pd.to_datetime(events_df['end'])
+        events_df = events_df[events_df['start'] < last_day.tz_localize('UTC')]
+        events_df = events_df[events_df['description'].str.contains('DONE')]
+        
+        return events_df
+
+        
     
     def set_event(self, init_time, end_time, title, description):
         start = init_time.to_pydatetime().isoformat()
