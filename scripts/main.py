@@ -23,7 +23,7 @@ change_look_and_feel('Cardeal') # Color Scheme
 layout = None # Layout
 window = None # Frame
 workSlices = None # Global
-mail = "zedocanogrosso@gmail.com"
+mail = "seu_email@gmail.com"
 google_calendar = None
 
 # Atualizar calendar
