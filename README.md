@@ -1,5 +1,7 @@
 # Cardeal Assist (programa construído para o Hackathon InovaCode 2020)
 
+![Alt text](/docs/cardealicon.png?raw=true "Icon")
+
 ## Descrição
 
 O Cardeal Assist é uma assistente pessoal para ajudar em produtividade no trabalho ou estudos, permitindo a divisão melhor entre vida pessoal e profissional. Assim, sincronizada com a Google Agenda atráves da API do Google, ela permite o agendamento de tarefas, assistente de foco utilizando a técnica pomodoro bem como o bloqueio de sites de redes sociais ou da preferência do usuário durante o período de foco. Além disso, o sistema permite a bonificação pela conclusão de tarefas ou tempo de trabalho, gamificando a solução e permitindo a migração do regime de trabalhos por carga horária para o regime de produtividade.    
