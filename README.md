@@ -10,6 +10,7 @@ O Cardeal Assist é uma assistente pessoal para ajudar em produtividade no traba
 - Os scripts principais estão na pasta "/scripts", onde o "main.py" é responsável por iniciar as threads principais para executar as funções descritas
 
 - Interface básica para criação de tarefas com prioridades
+
 ![Alt text](/docs/Aplicacao3.png?raw=true "Basic Interface")
 
 - Especificação de perídos de trabalho no Google Agenda
