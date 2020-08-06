@@ -9832,7 +9832,7 @@ LOOK_AND_FEEL_TABLE = {'SystemDefault':
                                     'BORDER': 1, 'SLIDER_DEPTH': 0,
                                     'PROGRESS_DEPTH': 0},
 
-                       'Reds': {'BACKGROUND': '#ad4b4d',
+                       'Cardeal': {'BACKGROUND': '#ad4b4d',
                                 'TEXT': 'white',
                                 'INPUT': '#fae3e3',
                                 'TEXT_INPUT': 'black',

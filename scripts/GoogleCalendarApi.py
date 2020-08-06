@@ -16,16 +16,19 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 class GoogleCalendarApi(object):
 
+    # Definicao das variáveis da classe
     creds = None
     service = None
     subject = None
 
+    # Construtor
     def __init__(self, subject):
         self.subject = subject
         self.creds = None
         self.service = None
         self.setup()
 
+    # Inicializacao da Interface
     def setup(self):
         
         # The file token.pickle stores the user's access and refresh tokens, and is
@@ -48,6 +51,7 @@ class GoogleCalendarApi(object):
 
         self.service = build('calendar', 'v3', credentials=self.creds)
 
+    # Pega os proximos 100 eventos na sua agenda
     def get_next_events(self, last_day, number=100):
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
@@ -67,10 +71,11 @@ class GoogleCalendarApi(object):
 
         return events_df
 
+    # Verifica os eventos que foram realizados nessa semana
     def check_concluded_events_this_week(self):
         # Call the Calendar API
         week_init = pendulum.now().start_of('week')
-        print(week_init)
+        #print(week_init)
         last_day = pd.to_datetime(pendulum.now().end_of('week'))
         events_result = self.service.events().list(calendarId='primary', timeMin=week_init,
                                             maxResults=100, singleEvents=True,
@@ -83,13 +88,16 @@ class GoogleCalendarApi(object):
         events_df['start'] = pd.to_datetime(events_df['start'])
         events_df['end'] = events_df['end'].apply(lambda x: x.get('dateTime'))
         events_df['end'] = pd.to_datetime(events_df['end'])
-        events_df = events_df[events_df['start'] < last_day.tz_localize('UTC')]
+        try:
+            events_df = events_df[events_df['start'] < last_day.tz_localize('UTC')]
+        except:
+            pass
         events_df = events_df[events_df['description'].str.contains('DONE')]
-        
+
         return events_df
 
         
-    
+    # Marca um evento na agenda google
     def set_event(self, init_time, end_time, title, description):
         start = init_time.to_pydatetime().isoformat()
         end = end_time.to_pydatetime().isoformat()
@@ -101,13 +109,16 @@ class GoogleCalendarApi(object):
 
         event = self.service.events().insert(calendarId=self.subject,body=body).execute()
 
+    # Deleta um eventos da agenda Google
     def delete_events(self, eventsIds):
         for eventId in eventsIds:
             self.delete_event(eventId)
 
+    # Deleta um evento da agenda google
     def delete_event(self, eventId):
         event = self.service.events().delete(calendarId=self.subject,eventId=eventId).execute()
 
+    # Define os Slices de tempo para a realização das tarefas propostas
     def schedule_time(self, tasks, periods_df, pomodoro_break=pd.Timedelta(minutes=5)):
         periods_df["Total time"] = periods_df['end'] - periods_df['start']
         tasks['Time'] = tasks['Time'].apply(lambda x: pd.Timedelta(minutes=x))
